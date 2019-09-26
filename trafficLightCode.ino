@@ -1,10 +1,11 @@
+#define potent A5
 int r_led =2;//номер пин'а, который будет обеспечивает работу красного светодиода
 int y_led =3;//номер пин'а, который будет обеспечивает работу жёлтого светодиода
 int g_led =4;//номер пин'а, который будет обеспечивает работу зелёного светодиода
 int button = 5;//номер пин'a, который будет отвечать за работу кнопки
 boolean butt;//проверка  нажатия кнопки
 unsigned long preMillis=0;//таймер
-long interval=5000;//интервал переключения светодиодов
+long interval;//интервал переключения светодиодов
 
 
 void setup()
@@ -19,25 +20,25 @@ void setup()
 
 void flash(){
   
-  /*Мигание зелёного светодиода*/
+  //Мигание зелёного светодиода
   
   //выключаю все светодиоды
   digitalWrite(y_led, LOW);
   digitalWrite(r_led,LOW);
   digitalWrite(g_led, LOW);
-    	delay(400); // ждём 0.4 секунды
+    	delay(interval/10); //ждём столько сколько определенно значением interval
   digitalWrite(g_led, HIGH);//включаю светодиод
-  		delay(800); // ждём 0.8 секунды  
+  		delay(interval/5); //ждём столько сколько определенно значением interval 
   digitalWrite(g_led, LOW);//выключаю светодиод
-    	delay(350); // ждём 0.35 секунды
+    	delay(interval/12); //ждём столько сколько определенно значением interval
   digitalWrite(g_led, HIGH);//включаю светодиод
-  		delay(700); // ждём 0.7 секунды  
+  		delay(interval/6); //ждём столько сколько определенно значением interval 
   digitalWrite(g_led, LOW);//выключаю светодиод
-    	delay(300); // ждём 0.3 секунды
+    	delay(interval/14); //ждём столько сколько определенно значением interval
   digitalWrite(g_led, HIGH);//включаю светодиод
-  		delay(600); // ждём 0.6 секунды  
+  		delay(interval/7); //ждём столько сколько определенно значением interval 
   digitalWrite(g_led, LOW);//выключаю светодиод
-    delay(200); // ждём 0.2 секунды
+    delay(interval/16); //ждём столько сколько определенно значением interval
   return;
 }
 
@@ -46,33 +47,49 @@ void yellow(){
   	//загорается жёлтый светодиод
   
     digitalWrite(y_led, HIGH);//включаю жёлтый светодиод,который сигнализирует о скором включении красного
-  		delay(1000);//задержка в 1 секунду
+  		delay(interval/4);//задержка определенна значением interval
     digitalWrite(y_led, LOW);//выключаю
   
 }
 
-void loop()
-{
+void check_interval(){
   
+  //Проверка текущего значения потенциометра
+  
+ interval=analogRead(potent);//говорю что делать с потенциометром
+ interval=map(interval,0,1023,2000,5000);//меняю диапозон значений с 0-1023 до 2000-5000 в будущем это будет скоростью переключения светодиодов
+ interval=constrain(interval,2000,5000);//ограничение выхода из диапозона
+  
+}
+
+void loop()
+{ 
     butt=!digitalRead(button);//считыватель нажатия кнопки
     	start://метка для возврата
  	digitalWrite(y_led, LOW);//выключен
-    digitalWrite(g_led, LOW);//выключен
-    digitalWrite(r_led, HIGH);//включаю красный светодиод
-    	delay(interval-1000);//задержка в 4 секунд
+    digitalWrite(g_led, LOW);//выключен 
+  	preMillis=millis();//начальное время
+  
+  /*поменял delay на цикл,что бы можно было выбирать 
+  время свечения светодиода*/
+  
+  while((millis()-preMillis)<(interval-(interval/4))){
+  		check_interval();//Проверяю врменя задержки
+        digitalWrite(r_led, HIGH);//включаю красный светодиод
+  }
     	yellow();//желтый свет
     digitalWrite(r_led, LOW);//выключаю красный светодиод
-    	preMillis = millis();
+    	preMillis = millis();//начальное время
     digitalWrite(g_led, HIGH);//включаю зелёный светодиод 
   
   /*поменял delay на цикл,что бы можно было включить жёлтый свет,
-  как только он понадобится*/
+  а затем и красный, как только они понадобятся*/
   
-    	while(millis()-preMillis<interval+10){
-          
+    	while(millis()-preMillis<interval+50){
+          check_interval();//Проверяю врменя задержки
 		  //проверка была ли нажата кнопка	
           if(butt==1){
-            
+
         		flash();//Предупреждение о скором включении запрещающего сигнала
                 yellow();//включаю жёлтый свет
     			goto start;//возвращаюсь к началу программы
@@ -84,5 +101,4 @@ void loop()
     	}
   
     yellow();//включаю жёлтый свет
-  
   }
