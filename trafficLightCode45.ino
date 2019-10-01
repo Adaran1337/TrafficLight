@@ -64,7 +64,6 @@ void check_interval(){
 
 void loop()
 { 
-    butt=!digitalRead(button);//считыватель нажатия кнопки
     	start://метка для возврата
  	digitalWrite(y_led, LOW);//выключен
     digitalWrite(g_led, LOW);//выключен 
@@ -73,6 +72,7 @@ void loop()
   /*поменял delay на цикл,что бы можно было выбирать 
   время свечения светодиода*/
   
+  check_interval();
   while((millis()-preMillis)<(interval-(interval/4))){
   		check_interval();//Проверяю врменя задержки
         digitalWrite(r_led, HIGH);//включаю красный светодиод
@@ -88,7 +88,7 @@ void loop()
     	while(millis()-preMillis<interval+50){
           check_interval();//Проверяю врменя задержки
 		  //проверка была ли нажата кнопка	
-          if(butt==1){
+          if(!digitalRead(button)){
 
         		flash();//Предупреждение о скором включении запрещающего сигнала
                 yellow();//включаю жёлтый свет
